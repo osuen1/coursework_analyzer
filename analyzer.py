@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 from modules.search_module import get_kernel_version, get_suid_bit 
+=======
+from modules.search_module import get_kernel_version, get_suid_bit, get_root_process, get_bash_history
+>>>>>>> origin/patch
 
 def summary():
     print('=============FOUND=============')
@@ -9,6 +13,9 @@ def summary():
     suid_bits_array = get_suid_bit()
     for i in suid_bits_array:
         print(i)
+
+    print('==========ROOT PROCESS=========')
+    print(get_root_process())
 
 def main():
     summary()

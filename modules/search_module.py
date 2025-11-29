@@ -67,3 +67,29 @@ def get_suid_bit():
     except Exception as e:
         print(f'Ошибка при поиске SUID файлов: {e}')
         return []
+    
+# TODO: дописать
+# получение root процессов
+def get_root_process():
+    try:
+        result = subprocess.run(
+            'ps -u root',
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+
+        if result.returncode == 0:
+            bin = [line.strip() for line in result.stdout.split('\n') if line.strip()]
+            for i in bin:
+                return i
+        else:
+            print(f'Ошибка выполнения команды: {result.stderr}')
+        
+    except subprocess.TimeoutExpired:
+        print('Таймаут поиска процессов')
+        return []
+    except Exception as e:
+        print(f'Ошибка при поиске процессов: {e}')
+        return []
