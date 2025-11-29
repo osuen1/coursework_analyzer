@@ -82,8 +82,7 @@ def get_root_process():
 
         if result.returncode == 0:
             bin = [line.strip() for line in result.stdout.split('\n') if line.strip()]
-            for i in bin:
-                return i
+            return bin
         else:
             print(f'Ошибка выполнения команды: {result.stderr}')
         
