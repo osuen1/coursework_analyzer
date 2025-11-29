@@ -52,11 +52,11 @@ def get_suid_bit():
             text=True,
             timeout=60
         )
-
-        if result.returncode == 0:
+        
+        if result.returncode == 1:
             binaries = [line.strip() for line in result.stdout.split('\n') if line.strip()]
-            for i in binaries:
-                return i
+            return binaries
+        
         else:
             print(f'Ошибка выполнения команды: {result.stderr}')
         
