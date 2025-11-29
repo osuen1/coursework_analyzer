@@ -1,5 +1,6 @@
 import os
 import tempfile
+import subprocess
 
 # создаем временный файл
 def create_temp_file():
@@ -43,12 +44,26 @@ def get_bash_history():
 
 # получаем SUID биты
 def get_suid_bit():
-    with create_temp_file() as f:
-        tmp_path = f.name
-        os.system(f'find / -type f -user root -perm -4000 > {tmp_path}')
-        with open(tmp_path, 'r') as f:
-            binaries = [line.strip() for line in f.readlines() if line.strip()]
+    try:
+        result = subprocess.run (
+            'find / -type f -user root -perm -4000 2>/dev/null',
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+
+        if result.returncode == 0:
+            binaries = [line.strip() for line in result.stdout.split('\n') if line.strip()]
+            for i in binaries:
+                return i
+        else:
+            print(f'Ошибка выполнения команды: {result.stderr}')
         
-        # Удаляем временный файл
-        os.unlink(tmp_path)
-        return binaries
+    except subprocess.TimeoutExpired:
+        print('Таймаут поиска SUID файлов')
+        return []
+    
+    except Exception as e:
+        print(f'Ошибка при поиске SUID файлов: {e}')
+        return []
