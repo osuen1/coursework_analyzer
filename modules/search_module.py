@@ -68,7 +68,6 @@ def get_suid_bit():
         print(f'Ошибка при поиске SUID файлов: {e}')
         return []
     
-# TODO: дописать
 # получение root процессов
 def get_root_process():
     try:
@@ -91,4 +90,30 @@ def get_root_process():
         return []
     except Exception as e:
         print(f'Ошибка при поиске процессов: {e}')
+        return []
+    
+# TODO: исправить
+# получаем SGID биты 
+def get_sgid_bit():
+    try:
+        result = subprocess.run(
+            'find / -type d -perm -2000 2>/dev/null', 
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+
+        if result.returncode == 1:
+            binaries = [line.strip() for line in result.stdout.split('\n') if line.strip()]
+            return binaries
+        else:
+            print(f'Ошибка выполнения команды: {result.stderr}')
+    
+    except subprocess.TimeoutExpired:
+        print('Таймаут поиска SGID файлов')
+        return []
+    
+    except Exception as e:
+        print(f'Ошибка при поиске SGID файлов: {e}')
         return []
