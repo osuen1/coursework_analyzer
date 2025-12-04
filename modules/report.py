@@ -27,5 +27,9 @@ def summary():
     
     print('=====WORD-WRITABLE FILES=====')
     word_writable_files = sm.get_word_writable_files()
-    for i in word_writable_dirs:
+    for i in word_writable_files:
         print(i)
+
+    print('=====CRON JOBS=====')
+    cron_jobs = sm.get_cron_jobs()
+    print(cron_jobs)

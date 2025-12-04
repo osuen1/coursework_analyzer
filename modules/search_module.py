@@ -103,11 +103,12 @@ def get_sgid_bit():
             timeout=60
         )
 
-        if result.returncode == 0:
+        if result.returncode == 1:
             binaries = [line.strip() for line in result.stdout.split('\n') if line.strip()]
             return binaries
         else:
             print(f'Ошибка выполнения команды: {result.stderr}')
+            return []
     
     except subprocess.TimeoutExpired:
         print('Таймаут поиска SGID файлов')
@@ -116,7 +117,8 @@ def get_sgid_bit():
     except Exception as e:
         print(f'Ошибка при поиске SGID файлов: {e}')
         return []
-    
+
+# получаем world-writable файлы и директории
 def get_word_writable_files():
     try:
         result = subprocess.run(
@@ -127,7 +129,7 @@ def get_word_writable_files():
             timeout=60
         )
 
-        if result.returncode == 0:
+        if result.returncode == 1:
             binaries = [line.strip() for line in result.stdout.split('\n') if line.strip()]
             return binaries
         else:
@@ -152,7 +154,7 @@ def get_word_writable_dirs():
             timeout=60
         )
 
-        if result.returncode == 0:
+        if result.returncode == 1:
             dirs = [line.strip() for line in result.stdout.split('\n') if line.strip()]
             return dirs
         else:
@@ -165,3 +167,45 @@ def get_word_writable_dirs():
     except Exception as e:
         print(f'Ошибка при поиске world-writable директорий: {e}')
         return []
+
+# TODO: дописать
+# получаем cron-задачи
+def get_cron_jobs():
+    cron_locations = [
+        '/etc/crontab',
+        '/etc/cron.d/',
+        '/etc/cron.daily/',
+        '/etc/cron.hourly/',
+        '/etc/cron.monthly/',
+        '/etc/cron.weekly/',
+        '/var/spool/cron/crontabs/',
+        '/var/spool/cron/',
+    ]
+    
+    all_crons = []
+    
+    for path in cron_locations:
+        if os.path.exists(path):
+            try:
+                result = subprocess.run(
+                    f'ls -la {path} 2>/dev/null',
+                    shell=True, capture_output=True, text=True, timeout=30
+                )
+                if result.returncode == 0:
+                    lines = [line.strip() for line in result.stdout.split('\n') if line.strip()]
+                    all_crons.extend(lines)
+            except:
+                continue
+    
+    # crontab текущего пользователя
+    try:
+        result = subprocess.run('crontab -l 2>/dev/null', 
+                              shell=True, capture_output=True, text=True, timeout=10)
+        if result.returncode == 1:
+            lines = [line.strip() for line in result.stdout.split('\n') if line.strip()]
+            all_crons.extend(lines)
+    except subprocess.TimeoutExpired:
+        print('Таймаут получения crontab')
+        return []
+    
+    return all_crons
